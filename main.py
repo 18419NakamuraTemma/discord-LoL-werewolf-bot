@@ -9,6 +9,8 @@ TOKEN_data = f.readlines()
 TOKEN = TOKEN_data[0]
 f.close()
 
+teamA_position = ["TOP", "JG", "MID", "APC", "SUP"]
+teamB_position = ["TOP", "JG", "MID", "APC", "SUP"]
 spector_status = False
 game = False
 wolf_name = []
@@ -16,8 +18,10 @@ wolf_name = []
 
 @client.command()
 async def wolf(ctx):
-    global game,wolf_name,spector_status
+    global game,wolf_name,spector_status,teamA_position,teamB_position
     temp = 0
+    teamA_temp = 0
+    teamB_temp = 0
     member_len = 0
     member_names = []
     members = []
@@ -62,6 +66,8 @@ async def wolf(ctx):
         teamA_channel = discord.utils.get(ctx.guild.channels, name="人狼１")
         teamB_channel = discord.utils.get(ctx.guild.channels, name="人狼２")
         random.shuffle(member_names)
+        random.shuffle(teamA_position)
+        random.shuffle(teamB_position)
 
         for member in VC.members:
             if member.name == member_names[0] or member.name == member_names[5]:
@@ -71,9 +77,15 @@ async def wolf(ctx):
             if member.name == member_names[0] or member.name == member_names[1] or member.name == member_names[2] or member.name == member_names[3] or member.name == member_names[4]:
                 await member.move_to(teamA_channel)
                 await member.add_roles(teamA_role)
+                dm = await member.create_dm()
+                await dm.send(teamA_position[teamA_temp])
+                teamA_temp += 1
             if member.name == member_names[5] or member.name == member_names[6] or member.name == member_names[7] or member.name == member_names[8] or member.name == member_names[9]:
                 await member.move_to(teamB_channel)
                 await member.add_roles(teamB_role)
+                dm = await member.create_dm()
+                await dm.send(teamB_position[teamB_temp])
+                teamB_temp += 1
 
             if temp > 9 and spector_status:
                 await member.move_to(spector_channel)
