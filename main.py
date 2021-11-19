@@ -13,7 +13,75 @@ teamA_position = ["TOP", "JG", "MID", "APC", "SUP"]
 teamB_position = ["TOP", "JG", "MID", "APC", "SUP"]
 spector_status = False
 game = False
+custom_game = False
 wolf_name = []
+
+
+@client.command()
+async def custom(ctx,arg):
+    global custom_game,teamA_position,teamB_position
+    temp = 0
+    teamA_temp = 0
+    teamB_temp = 0
+    VC = ctx.author.voice.channel
+    member_names = []
+    thread_category = client.get_channel(848994293959360512)
+    for member in VC.members:
+        member_names.append(member.name)
+    
+    random.shuffle(names)
+    random.shuffle(teamA_position)
+    random.shuffle(teamB_position)
+    teamA_role = discord.utils.get(ctx.guild.roles, name="カスタム１")
+    teamB_role = discord.utils.get(ctx.guild.roles, name="カスタム２")
+    spector_role = discord.utils.get(ctx.guild.roles, name="観戦者")
+
+    eamA_overwrites = {
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False, connect=False),
+            teamA_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, connect=True, speak=True),
+            spector_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, connect=True, speak=True)
+        }
+
+    await ctx.guild.create_voice_channel("カスタム１", category=thread_category, overwrites=teamA_overwrites)
+    await ctx.guild.create_text_channel("相談室１", category=thread_category, overwrites=teamA_overwrites)
+
+    teamB_overwrites = {
+            ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False, connect=False),
+            teamB_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, connect=True, speak=True),
+            spector_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, connect=True, speak=True)
+        }
+
+    await ctx.guild.create_voice_channel("カスタム２", category=thread_category, overwrites=teamB_overwrites)
+    await ctx.guild.create_text_channel("相談室２", category=thread_category, overwrites=teamB_overwrites)
+
+    teamA_channel = discord.utils.get(ctx.guild.channels, name="カスタム１")
+    teamB_channel = discord.utils.get(ctx.guild.channels, name="カスタム２")
+
+    for name in member_names:
+        for member in VC.members:
+            if member.name == name:
+                if temp % 2 == 0:
+                    member.move_to(teamA_channel)
+                    await member.add_roles(teamA_role)
+                    if arg == "random":
+                        dm = await member.create_dm()
+                        await dm.send(teamA_position[teamA_temp])
+                        teamA_temp += 1
+
+                else:
+                    member.move_to(teamB_channel)
+                    await member.add_roles(teamB_role)
+                    if arg == "random":
+                        dm = await member.create_dm()
+                        await dm.send(teamB_position[teamB_temp])
+                        teamB_temp += 1
+
+                temp += 1
+    
+    await ctx.send("移動が完了しました。 **end_custom** コマンドで終了します！")
+    custom_game = True
+        
+    
 
 
 @client.command()
@@ -149,5 +217,13 @@ async def result_wolf(ctx):
 
     else:
         await ctx.send("人狼が開始されていません！")
+
+@client.command()
+async def end_custom:
+    global custom_game
+    if custom_game:
+        main_channel = client.get_channel(850694638608449576)
+
+
 
 client.run(TOKEN)
