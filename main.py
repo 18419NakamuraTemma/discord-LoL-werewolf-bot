@@ -28,31 +28,25 @@ async def rank(ctx):
     thread_category = client.get_channel(848994293959360512)
     for member in VC.members:
         member_names.append(member.name)
-
-    member_num = lem(member_names)
+    random.shuffle(member_names)
+    member_num = len(member_names)
     if member_num == 0:
         await ctx.send("VCに接続しているユーザーがいません")
     elif member_num % 2 == 0:
-        rank_num = member_num / 2
-        for i in range(room_num):
-            room_num = i + 1
-            await ctx.guild.create_voice_channel("ランク{}".format(room_num), category=thread_category, overwrites=teamB_overwrites)
+        rank_num = int(member_num / 2)
+        for i in range(rank_num):
+            room_num = int(i + 1)
+            await ctx.guild.create_voice_channel("ランク{}".format(room_num), category=thread_category)
             voice_channel = discord.utils.get(ctx.guild.channels, name="ランク{}".format(room_num))
             for j in range(2):
-                for name in member_names:
-                    for member in VC.members:
-                        if name == member.name:
-                            member.move_to(voice_channel)
+                for member in VC.members:
+                    if member_names[i+j] == member.name:
+                        await member.move_to(voice_channel)
         
-        await ctx.sened("移動が完了しました")
+        await ctx.send("移動が完了しました")
+        rank_game = True
 
     
-    random.shuffle(member_names)
-
-
-
-
-
 
 @client.command()
 async def custom(ctx,arg):
@@ -244,6 +238,7 @@ async def end_wolf(ctx):
         await ctx.send("人狼が開始されていません！")
 
 
+
 @client.command()
 async def result_wolf(ctx):
     global game,wolf_name
@@ -256,7 +251,7 @@ async def result_wolf(ctx):
         await ctx.send("人狼が開始されていません！")
 
 @client.command()
-async def end_custom:
+async def end_custom(ctx):
     global custom_game
     if custom_game:
         main_channel = client.get_channel(850694638608449576)
