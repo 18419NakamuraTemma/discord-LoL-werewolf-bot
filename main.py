@@ -13,8 +13,45 @@ teamA_position = ["TOP", "JG", "MID", "APC", "SUP"]
 teamB_position = ["TOP", "JG", "MID", "APC", "SUP"]
 spector_status = False
 game = False
+rank_game = False
+rank_num = 0
 custom_game = False
 wolf_name = []
+
+@client.command()
+async def rank(ctx):
+    global rank_game,rank_num
+    VC = ctx.author.voice.channel
+    temp = 0
+    rooms = 0
+    member_names = []
+    thread_category = client.get_channel(848994293959360512)
+    for member in VC.members:
+        member_names.append(member.name)
+
+    member_num = lem(member_names)
+    if member_num == 0:
+        await ctx.send("VCに接続しているユーザーがいません")
+    elif member_num % 2 == 0:
+        rank_num = member_num / 2
+        for i in range(room_num):
+            room_num = i + 1
+            await ctx.guild.create_voice_channel("ランク{}".format(room_num), category=thread_category, overwrites=teamB_overwrites)
+            voice_channel = discord.utils.get(ctx.guild.channels, name="ランク{}".format(room_num))
+            for j in range(2):
+                for name in member_names:
+                    for member in VC.members:
+                        if name == member.name:
+                            member.move_to(voice_channel)
+        
+        await ctx.sened("移動が完了しました")
+
+    
+    random.shuffle(member_names)
+
+
+
+
 
 
 @client.command()
@@ -29,7 +66,7 @@ async def custom(ctx,arg):
     for member in VC.members:
         member_names.append(member.name)
     
-    random.shuffle(names)
+    random.shuffle(member_names)
     random.shuffle(teamA_position)
     random.shuffle(teamB_position)
     teamA_role = discord.utils.get(ctx.guild.roles, name="カスタム１")
@@ -61,7 +98,7 @@ async def custom(ctx,arg):
         for member in VC.members:
             if member.name == name:
                 if temp % 2 == 0:
-                    member.move_to(teamA_channel)
+                    await member.move_to(teamA_channel)
                     await member.add_roles(teamA_role)
                     if arg == "random":
                         dm = await member.create_dm()
@@ -69,7 +106,7 @@ async def custom(ctx,arg):
                         teamA_temp += 1
 
                 else:
-                    member.move_to(teamB_channel)
+                    await member.move_to(teamB_channel)
                     await member.add_roles(teamB_role)
                     if arg == "random":
                         dm = await member.create_dm()
