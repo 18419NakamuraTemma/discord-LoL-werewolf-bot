@@ -40,13 +40,33 @@ async def rank(ctx):
             voice_channel = discord.utils.get(ctx.guild.channels, name="ランク{}".format(room_num))
             for j in range(2):
                 for member in VC.members:
-                    if member_names[i+j] == member.name:
+                    num = room_num * 2 - 2
+                    if member_names[num+j] == member.name:
                         await member.move_to(voice_channel)
         
-        await ctx.send("移動が完了しました")
-        rank_game = True
+        await ctx.send("移動が完了しました。 **end_rank**で終了してください！")
 
-    
+    else:
+        rank_num = int(member_num / 2)
+        for i in range(rank_num):
+            room_num = int(i + 1)
+            await ctx.guild.create_voice_channel("ランク{}".format(room_num), category=thread_category)
+            voice_channel = discord.utils.get(ctx.guild.channels, name="ランク{}".format(room_num))
+            num = room_num * 2 - 2
+            for j in range(2):
+                for member in VC.members:
+                    if member_names[num+j] == member.name:
+                        await member.move_to(voice_channel)
+        rank_num += 1
+        await ctx.guild.create_voice_channel("ランク{}".format(rank_num), category=thread_category)
+        voice_channel = discord.utils.get(ctx.guild.channels, name="ランク{}".format(rank_num))
+        num = rank_num * 2 - 2
+        for member in VC.members:
+            if member_names[num] == member.name:
+                await member.move_to(voice_channel)
+
+        await ctx.send("移動が完了しました。 **end_rank**で終了してください！")
+
 
 @client.command()
 async def custom(ctx,arg):
@@ -67,7 +87,7 @@ async def custom(ctx,arg):
     teamB_role = discord.utils.get(ctx.guild.roles, name="カスタム２")
     spector_role = discord.utils.get(ctx.guild.roles, name="観戦者")
 
-    eamA_overwrites = {
+    teamA_overwrites = {
             ctx.guild.default_role: discord.PermissionOverwrite(read_messages=False, connect=False),
             teamA_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, connect=True, speak=True),
             spector_role: discord.PermissionOverwrite(read_messages=True, send_messages=True, connect=True, speak=True)
@@ -109,7 +129,7 @@ async def custom(ctx,arg):
 
                 temp += 1
     
-    await ctx.send("移動が完了しました。 **end_custom** コマンドで終了します！")
+    await ctx.send("移動が完了しました。 **//end_custom** コマンドで終了します！")
     custom_game = True
         
     
@@ -192,7 +212,7 @@ async def wolf(ctx):
             temp += 1
 
         else:
-            await ctx.send("移動が完了しました！VCを待機室に移動する場合は**//end_wolf**を実行してください！")
+            await ctx.send("移動が完了しました！VCを待機室に移動する場合は **//end_wolf** を実行してください！")
             game = True
 
 
@@ -232,7 +252,7 @@ async def end_wolf(ctx):
         await teamA_VC.delete()
         await teamB_VC.delete()
 
-        await ctx.send("移動が完了しました！結果を表示する場合は**result_wolf**を実行してください！")
+        await ctx.send("移動が完了しました！結果を表示する場合は **//result_wolf** を実行してください！")
 
     else:
         await ctx.send("人狼が開始されていません！")
@@ -255,7 +275,42 @@ async def end_custom(ctx):
     global custom_game
     if custom_game:
         main_channel = client.get_channel(850694638608449576)
+        teamA_VC = discord.utils.get(ctx.guild.channels, name="カスタム１")
+        teamB_VC = discord.utils.get(ctx.guild.channels, name="カスタム２")
+        teamA_textchannel = discord.utils.get(ctx.guild.channels, name="相談室１")
+        teamB_textchannel = discord.utils.get(ctx.guild.channels, name="相談室２")
+        teamA_role = discord.utils.get(ctx.guild.roles, name="カスタム１")
+        teamB_role = discord.utils.get(ctx.guild.roles, name="カスタム２")
 
+        for teamA_member in teamA_VC.members:
+            await teamA_member.move_to(main_channel)
+            await teamA_member.remove_roles(teamA_role)
 
+        for teamB_member in teamB_VC.members:
+            await teamB_member.move_to(main_channel)
+            await teamB_member.remove_roles(teamB_role)
+
+        await teamA_textchannel.delete()
+        await teamB_textchannel.delete()
+        await teamA_VC.delete()
+        await teamB_VC.delete()
+
+        await ctx.send("移動が完了しました！")
+        custom_game = False
+
+    else:
+        await ctx.send("カスタムゲームが開始されていません。 **//custom (引数)** でカスタムゲームを開始してください！")
+
+@client.command()
+async def end_rank(ctx):
+    try:
+        main_channel = client.get_channel(850694638608449576)
+        VC = ctx.author.voice.channel
+        for member in VC.members:
+            await member.move_to(main_channel)
+        await VC.delete()
+        await ctx.send("移動が完了しました！")
+    except:
+        await ctx.send("エラーが発生しました！")
 
 client.run(TOKEN)
