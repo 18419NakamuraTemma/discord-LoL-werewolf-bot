@@ -18,6 +18,15 @@ rank_num = 0
 custom_game = False
 wolf_name = []
 
+
+@client.command()
+async def member(ctx):
+    VC = ctx.author.voice.channel
+    await ctx.send("VC参加者")
+    for member in VC.members:
+        await ctx.send(member.name)
+
+
 @client.command()
 async def rank(ctx):
     global rank_game,rank_num
