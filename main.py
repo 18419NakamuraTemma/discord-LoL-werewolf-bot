@@ -322,4 +322,13 @@ async def end_rank(ctx):
     except:
         await ctx.send("エラーが発生しました！")
 
+@client.command(pass_context = True)
+async def change_name(ctx,  member: discord.Member, nick):
+    try:
+        await member.edit(nick = nick)
+        await ctx.send(f'ニックネームを{member.mention}に変更しました！ ')   
+    except:
+        await ctx.send("エラーが発生しました！")
+
+
 client.run(TOKEN)
